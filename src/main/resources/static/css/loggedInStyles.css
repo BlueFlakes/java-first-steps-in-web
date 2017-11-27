@@ -18,7 +18,6 @@ body {
     line-height:43px;
     font-family:'Oswald', Helvetica;
     display: block;
-    margin: 30px;
 }
 .push_button:before {
     background:#f0f0f0;
