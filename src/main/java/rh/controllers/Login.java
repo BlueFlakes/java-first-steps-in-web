@@ -7,6 +7,7 @@ import org.jtwig.JtwigTemplate;
 import rh.dao.UserDao;
 import rh.enums.ActionType;
 import rh.exceptions.DAOException;
+import rh.models.Activity;
 import rh.models.User;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import static rh.handlers.Common.*;
 
 public class Login implements HttpHandler {
     private Map<UUID, User> loggedUsers;
+
 
     public Login(Map<UUID, User> loggedUsers) {
         this.loggedUsers = loggedUsers;
@@ -33,35 +35,27 @@ public class Login implements HttpHandler {
     }
 
     private void handleLogin(HttpExchange httpExchange) throws IOException, DAOException {
-        String response = null;
-
-        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/MainTPL.twig");
+        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/Login.twig");
         JtwigModel model = JtwigModel.newModel();
-
-        String path = "classpath:/" + "templates/snippets/LoginForm.twig";
-        model.with("cssPath", "static/css/styles.css");
-        model.with("templatePath", path);
 
         User user = getUserByCookie(httpExchange);
         Map<String, String> formData = getFormData(httpExchange);
-        ActionType action = null;
+        String path = httpExchange.getRequestURI().getPath();
+        Activity activity;
 
-        if (user == null) {
-            boolean wasSignInSuccessfully = tryLoginUser(httpExchange, formData);
+        if (user == null && path.equalsIgnoreCase("/login")) {
+            activity = tryLoginUser(httpExchange, formData);
 
-            if (wasSignInSuccessfully) {
-                action = ActionType.REDIRECT;
-                response = "/home";
-            } else {
-                action = ActionType.WRITE;
-                response = template.render(model);
+            if (activity == null) {
+                activity = new Activity(ActionType.WRITE, template.render(model));
             }
+        } else if (user != null) {
+            activity = new Activity(ActionType.REDIRECT, "/home");
         } else {
-            action = ActionType.REDIRECT;
-            response = "/home";
+            activity = new Activity(ActionType.REDIRECT, "/login");
         }
 
-        manageAction(httpExchange, action, response);
+        manageAction(httpExchange, activity);
     }
 
     private User getUserByCookie(HttpExchange httpExchange) throws IOException {
@@ -69,7 +63,7 @@ public class Login implements HttpHandler {
     }
 
 
-    private boolean tryLoginUser(HttpExchange httpExchange, Map<String, String> formData) throws DAOException, IOException {
+    private Activity tryLoginUser(HttpExchange httpExchange, Map<String, String> formData) throws DAOException, IOException {
         final String loginKey = "username";
         final String passwordKey = "password";
 
@@ -84,10 +78,10 @@ public class Login implements HttpHandler {
                 UUID generatedUUID = UUID.randomUUID();
                 Cookie.setCookie(httpExchange, "UUID", generatedUUID);
                 this.loggedUsers.put(generatedUUID, user);
-                return true;
+                return new Activity(ActionType.REDIRECT, "/home");
             }
         }
 
-        return false;
+        return null;
     }
 }

@@ -6,6 +6,7 @@ import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import rh.enums.ActionType;
 import rh.handlers.Common;
+import rh.models.Activity;
 import rh.models.User;
 
 import java.io.IOException;
@@ -21,39 +22,41 @@ public class Home implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-
-        ActionType action = null;
-        String response;
-        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/MainTPL.twig");
+        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/Home.twig");
         JtwigModel model = JtwigModel.newModel();
         Map<String, String> formData = Common.getFormData(httpExchange);
-        String path = "classpath:/" + "templates/snippets/LoggedIn.twig";
-        model.with("cssPath", "static/css/loggedInStyles.css");
-        model.with("templatePath", path);
-        response = template.render(model);
+        String uriPath = httpExchange.getRequestURI().getPath();
+        Activity activity;
 
         if (!isUserLoggedIn(httpExchange)) {
-            action = ActionType.REDIRECT;
-            response = "/login";
+            activity = new Activity(ActionType.REDIRECT, "/login");
+
+        } else if (!uriPath.equals("/home")) {
+            activity = new Activity(ActionType.REDIRECT, "/home");
 
         } else {
-            action = ActionType.WRITE;
+            activity = handleLogoutRequest(httpExchange, formData);
+
+            if (activity == null) {
+                activity = new Activity(ActionType.WRITE, template.render(model));
+            }
         }
 
-        if (formData.containsKey("logout")) {
-            logoutThisUser(httpExchange);
-            action = ActionType.REDIRECT;
-            response = "/login";
-        }
-
-        System.out.println(httpExchange.getRequestURI());
-
-        Common.manageAction(httpExchange, action, response);
+        Common.manageAction(httpExchange, activity);
     }
 
     private boolean isUserLoggedIn(HttpExchange httpExchange) throws IOException {
         User user = Cookie.lookForUserInLoggedUsers(httpExchange, this.loggedUsers);
         return user != null;
+    }
+
+    private Activity handleLogoutRequest(HttpExchange httpExchange, Map<String, String> formData) throws IOException {
+        if (formData.containsKey("logout")) {
+            logoutThisUser(httpExchange);
+            return new Activity(ActionType.REDIRECT, "/login");
+        }
+
+        return null;
     }
 
     private void logoutThisUser(HttpExchange httpExchange) throws IOException {

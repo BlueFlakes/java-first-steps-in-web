@@ -2,6 +2,7 @@ package rh.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import rh.enums.ActionType;
+import rh.models.Activity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,14 +49,14 @@ public class Common {
         return postValues;
     }
 
-    public static void manageAction(HttpExchange httpExchange, ActionType type, String response) throws IOException {
-        switch (type) {
+    public static void manageAction(HttpExchange httpExchange, Activity activity) throws IOException {
+        switch (activity.getAction()) {
             case REDIRECT:
-                redirect(httpExchange, response);
+                redirect(httpExchange, activity.getResponse());
                 break;
 
             case WRITE:
-                writeHttpOutputStream(httpExchange, response);
+                writeHttpOutputStream(httpExchange, activity.getResponse());
                 break;
         }
     }
