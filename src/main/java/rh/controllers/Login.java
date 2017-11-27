@@ -20,7 +20,6 @@ import static rh.handlers.Common.*;
 public class Login implements HttpHandler {
     private Map<UUID, User> loggedUsers;
 
-
     public Login(Map<UUID, User> loggedUsers) {
         this.loggedUsers = loggedUsers;
     }
