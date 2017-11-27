@@ -10,11 +10,6 @@ import java.util.UUID;
 
 
 public class Cookie {
-    private static User findByCookie(HttpExchange httpExchange) {
-        String cookies = httpExchange.getRequestHeaders().getFirst("Cookie");
-
-        return null;
-    }
 
     public static User lookForUserInLoggedUsers(HttpExchange httpExchange, Map<UUID, User> loggedUsers) throws IOException {
         String cookies = httpExchange.getRequestHeaders().getFirst("Cookie");
@@ -40,10 +35,4 @@ public class Cookie {
         HttpCookie cookie = new HttpCookie(name, uuid.toString());
         httpExchange.getResponseHeaders().add("Set-Cookie", cookie.toString());
     }
-
-    private static String generatrAttribute(String attr, String value) {
-        return attr + "=" + value + ";";
-    }
-
-
 }
