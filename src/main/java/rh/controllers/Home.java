@@ -38,6 +38,8 @@ public class Home implements HttpHandler {
             activity = handleLogoutRequest(httpExchange, formData);
 
             if (activity == null) {
+                User user = getThisUser(httpExchange);
+                model.with("name", user.getName());
                 activity = new Activity(ActionType.WRITE, template.render(model));
             }
         }
@@ -69,5 +71,9 @@ public class Home implements HttpHandler {
                 this.loggedUsers.remove(user.getKey());
             }
         }
+    }
+
+    private User getThisUser(HttpExchange httpExchange) throws IOException {
+        return Cookie.lookForUserInLoggedUsers(httpExchange, this.loggedUsers);
     }
 }
