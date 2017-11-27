@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public class DBConnection {
     private static final String dbUrl = "jdbc:sqlite:data/database.db";
-    private static Connection connection;
+    private static volatile Connection connection;
 
     public static Connection getConnection() throws DAOException {
         if (connection == null) {
