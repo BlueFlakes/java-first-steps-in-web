@@ -17,7 +17,6 @@ public class Static implements HttpHandler {
 
         // get file path from url
         URI uri = httpExchange.getRequestURI();
-        System.out.println("looking for: " + uri.getPath());
         String path = "." + uri.getPath();
 
         // get file from resources folder, see: https://www.mkyong.com/java/java-read-a-file-from-resources-folder/
@@ -37,10 +36,10 @@ public class Static implements HttpHandler {
     }
 
     private void send404(HttpExchange httpExchange) throws IOException {
-        String response = "404 (Not Found)\n";
+        String response = "<h1>404 Not Found\n</h1>";
         httpExchange.sendResponseHeaders(404, response.length());
         OutputStream os = httpExchange.getResponseBody();
-        os.write(response.toString().getBytes());
+        os.write(response.getBytes());
         os.close();
     }
 
